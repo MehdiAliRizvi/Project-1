@@ -6,7 +6,7 @@ app = Flask(__name__)
 # MongoDB connection
 client = MongoClient('mongodb://localhost:27017/')
 db = client['rulebase']
-collection = db['project1']
+collection = db['RuleBase']
 
 @app.route('/')
 def index():
