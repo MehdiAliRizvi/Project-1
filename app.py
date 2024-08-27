@@ -2,10 +2,11 @@ from flask import Flask, request, render_template, jsonify
 from pymongo import MongoClient
 
 class Rule:
-    def __init__(self, parameter, operator, value, unit, age_range, gender, valid_until, first_condition=None):
+    def __init__(self, parameter, condition_type, range_start, range_end, unit, age_range, gender, valid_until, first_condition=None):
         self.parameter = parameter
-        self.operator = operator
-        self.value = value
+        self.condition_type = condition_type
+        self.range_start = range_start
+        self.range_end = range_end
         self.unit = unit
         self.age_range = age_range
         self.gender = gender
@@ -15,8 +16,9 @@ class Rule:
     def to_dict(self):
         return {
             'parameter': self.parameter,
-            'operator': self.operator,
-            'value': self.value,
+            'condition_type': self.condition_type,
+            'range_start': self.range_start,
+            'range_end': self.range_end,
             'unit': self.unit,
             'age_range': self.age_range,
             'gender': self.gender,
@@ -69,7 +71,7 @@ class Database:
                 for lab_value in lab_values:
                     if (rule['parameter'] == lab_value['parameter'] and
                         rule['unit'] == lab_value['unit'] and
-                        eval(f"{lab_value['value']} {rule['operator']} {rule['value']}")):
+                        rule['range_start'] <= lab_value['value'] <= rule['range_end']):  # Range check
                         matching_diseases.append(disease['disease_code'])
                         break
         return matching_diseases
@@ -86,8 +88,9 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     parameters = request.form.getlist('parameter')
-    operators = request.form.getlist('operator')
-    values = request.form.getlist('value')
+    condition_types = request.form.getlist('condition_type')
+    range_starts = request.form.getlist('range_start')
+    range_ends = request.form.getlist('range_end')
     units = request.form.getlist('unit')
     age_ranges = request.form.getlist('age_range')
     genders = request.form.getlist('gender')
@@ -96,14 +99,14 @@ def submit():
     first_conditions = request.form.getlist('first_condition')
 
     # Ensure all lists have the same length
-    list_lengths = [len(parameters), len(operators), len(values), len(units), len(age_ranges), len(genders), len(valid_until_numbers), len(valid_until_units)]
+    list_lengths = [len(parameters), len(condition_types), len(range_starts), len(range_ends), len(units), len(age_ranges), len(genders), len(valid_until_numbers), len(valid_until_units)]
     if len(set(list_lengths)) != 1:
         return 'Error: Mismatched input lengths!'
 
     rules = []
     for i in range(len(parameters)):
         valid_until = f"{valid_until_numbers[i]} {valid_until_units[i]}"
-        rule = Rule(parameters[i], operators[i], values[i], units[i], age_ranges[i], genders[i], valid_until, first_conditions[i] if i < len(first_conditions) else None)
+        rule = Rule(parameters[i], condition_types[i], range_starts[i], range_ends[i], units[i], age_ranges[i], genders[i], valid_until, first_conditions[i] if i < len(first_conditions) else None)
         rules.append(rule)
 
     disease_code = request.form['disease_code']
@@ -152,3 +155,4 @@ def submit_lab_values():
 
 if __name__ == '__main__':
     app.run(debug=True)
+

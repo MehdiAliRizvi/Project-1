@@ -58,31 +58,33 @@
     </nav>
     <div class="container">
         <h1 class="text-center">RULE-BASE</h1>
-        <form id="rule-form" method="POST">
+        <form id="rule-form" method="POST" action="/submit">
             <div id="rules-container">
                 <div class="rule-section">
                     <div class="rule-header">Rule 1</div>
-                    <div class="condition-summary" id="condition-summary-1">First condition:</div>
                     <div class="form-row">
                         <div class="form-group col-md-3">
                             <label for="parameter">Parameter *</label>
-                            <input type="text" class="form-control parameter" name="parameter" placeholder="Add the Parameter" required>
+                            <input type="text" class="form-control parameter" name="parameter" placeholder="Parameter" required>
                         </div>
                         <div class="form-group col-md-3">
-                            <label for="operator">Operator *</label>
-                            <select class="form-control operator" name="operator" required>
+                            <label for="condition_type">Rule Type *</label>
+                            <select class="form-control condition_type" name="condition_type" required>
                                 <option value="">Choose...</option>
-                                <option value="<"><</option>
-                                <option value=">">></option>
-                                <option value=">=">>=</option>
-                                <option value="<="><=</option>
-                                <option value="=">=</option>
+                                <option value="is">is</option>
+                                <option value="is not">is not</option>
                             </select>
                         </div>
                         <div class="form-group col-md-3">
-                            <label for="value">Value</label>
-                            <input type="text" class="form-control value" name="value" placeholder="Value" required>
+                            <label for="range_start">Range Start *</label>
+                            <input type="number" class="form-control range_start" name="range_start" placeholder="Start" required>
                         </div>
+                        <div class="form-group col-md-3">
+                            <label for="range_end">Range End *</label>
+                            <input type="number" class="form-control range_end" name="range_end" placeholder="End" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group col-md-3">
                             <label for="unit">Unit *</label>
                             <select class="form-control unit" name="unit" required>
@@ -92,14 +94,12 @@
                                 <option value="g/L">g/L</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-4">
-                            <label for="ageRange">Applicable Age Range</label>
-                            <input type="text" class="form-control age-range" name="age_range" placeholder="e.g., 0-100" value="ALL" required>
+                        <div class="form-group col-md-3">
+                            <label for="age_range">Age Range *</label>
+                            <input type="text" class="form-control age_range" name="age_range" placeholder="Age Range" required>
                         </div>
-                        <div class="form-group col-md-4">
-                            <label for="gender">Gender</label>
+                        <div class="form-group col-md-3">
+                            <label for="gender">Gender *</label>
                             <select class="form-control gender" name="gender" required>
                                 <option value="ALL">ALL</option>
                                 <option value="Male">Male</option>
@@ -107,30 +107,32 @@
                                 <option value="Other">Other</option>
                             </select>
                         </div>
-                        <div class="form-group col-md-4">
-                            <label for="validUntil">Parameter Valid Until</label>
-                            <div class="form-row">
-                                <div class="col-md-6">
-                                    <input type="number" class="form-control valid-until-number" name="valid_until_number" placeholder="Number" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <select class="form-control valid-until-unit" name="valid_until_unit" required>
-                                        <option value="Days">Days</option>
-                                        <option value="Months">Months</option>
-                                        <option value="Years">Years</option>
-                                    </select>
-                                </div>
-                            </div>
+                        <div class="form-group col-md-3">
+                            <label for="valid_until_number">Valid Until (Number) *</label>
+                            <input type="number" class="form-control valid_until_number" name="valid_until_number" placeholder="Number" required>
                         </div>
                     </div>
                     <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <label for="valid_until_unit">Valid Until (Unit) *</label>
+                            <select class="form-control valid_until_unit" name="valid_until_unit" required>
+                                <option value="Days">Days</option>
+                                <option value="Months">Months</option>
+                                <option value="Years">Years</option>
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="form-row">
                         <div class="col-md-6">
-                            <button type="button" class="btn btn-primary btn-add">+ Add Another Condition</button>
+                            <button type="button" class="btn btn-primary btn-add">+ Add Another Rule</button>
                         </div>
                         <div class="col-md-6 text-right">
-                            <button type="button" class="btn btn-danger btn-remove">Remove This Condition</button>
+                            <button type="button" class="btn btn-danger btn-remove">Remove This Rule</button>
                         </div>
                     </div>
+                    <br>
+                    <div class="condition-summary" id="condition-summary-1">Rule 1:</div>
                 </div>
             </div>
             <div class="form-group">
@@ -156,16 +158,19 @@ $(document).ready(function() {
 
     function updateConditionSummary(ruleSection, ruleNumber) {
         const parameter = ruleSection.find('.parameter').val();
-        const operator = ruleSection.find('.operator').val();
-        const value = ruleSection.find('.value').val();
+        const conditionType = ruleSection.find('.condition_type').val(); // "is" or "is not"
+        const rangeStart = ruleSection.find('.range_start').val();
+        const rangeEnd = ruleSection.find('.range_end').val();
         const unit = ruleSection.find('.unit').val();
-        const ageRange = ruleSection.find('.age-range').val();
+        const ageRange = ruleSection.find('.age_range').val();
         const gender = ruleSection.find('.gender').val();
-        const validUntilNumber = ruleSection.find('.valid-until-number').val();
-        const validUntilUnit = ruleSection.find('.valid-until-unit').val();
+        const validUntilNumber = ruleSection.find('.valid_until_number').val();
+        const validUntilUnit = ruleSection.find('.valid_until_unit').val();
 
-        let conditionText = `Condition ${ruleNumber}: ${parameter} ${operator} ${value} ${unit}, applicable for ${ageRange} age range, ${gender} gender, valid until ${validUntilNumber} ${validUntilUnit}.`;
+        // Construct the Rule text based on the new format
+        let conditionText = `Rule ${ruleNumber}: ${parameter} ${conditionType} in range ${rangeStart}-${rangeEnd} ${unit}, applicable for ${ageRange} age range, ${gender} gender, valid until ${validUntilNumber} ${validUntilUnit}.`;
 
+        // Update the Rule summary text
         ruleSection.find(`#condition-summary-${ruleNumber}`).text(conditionText);
     }
 
@@ -175,7 +180,7 @@ $(document).ready(function() {
         newRuleSection.find('input').val('');
         newRuleSection.find('select').val('');
         newRuleSection.find('.rule-header').text('Rule ' + ruleCount);
-        newRuleSection.find('.condition-summary').attr('id', 'condition-summary-' + ruleCount).text('Condition ' + ruleCount + ':');
+        newRuleSection.find('.condition-summary').attr('id', 'condition-summary-' + ruleCount).text('Rule ' + ruleCount + ':');
         $('#rules-container').append(newRuleSection);
     });
 
@@ -193,7 +198,7 @@ $(document).ready(function() {
     function updateRuleHeaders() {
         $('.rule-section').each(function(index) {
             $(this).find('.rule-header').text('Rule ' + (index + 1));
-            $(this).find('.condition-summary').attr('id', 'condition-summary-' + (index + 1)).text('Condition ' + (index + 1) + ':');
+            $(this).find('.condition-summary').attr('id', 'condition-summary-' + (index + 1)).text('Rule ' + (index + 1) + ':');
         });
     }
 
@@ -227,28 +232,6 @@ $(document).ready(function() {
         }
     });
 });
-
-
-        function addCondition() {
-            const ruleDiv = document.querySelector('.rule-section').cloneNode(true);
-            const inputs = ruleDiv.querySelectorAll('input, select');
-            inputs.forEach(input => {
-                if (input.tagName === 'INPUT') {
-                    input.value = '';
-                } else if (input.tagName === 'SELECT') {
-                    input.selectedIndex = 0;
-                }
-            });
-            document.getElementById('rules-container').appendChild(ruleDiv);
-            updateRuleHeaders();
-        }
-
-        function updateRuleHeaders() {
-            $('.rule-section').each(function(index) {
-                $(this).find('.rule-header').text('Rule ' + (index + 1));
-                $(this).find('.condition-summary').attr('id', 'condition-summary-' + (index + 1)).text('Condition ' + (index + 1) + ':');
-            });
-        }
     </script>
 </body>
 </html>
