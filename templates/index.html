@@ -30,6 +30,10 @@
         .btn-add {
             margin-top: 10px;
         }
+        .btn-remove {
+            margin-top: 10px;
+            margin-left: 10px;
+        }
         .error {
             color: red;
         }
@@ -38,7 +42,7 @@
 <body>
     <div class="container">
         <h1 class="text-center">RULE-BASE</h1>
-        <form action="/submit" method="POST"> <!-- Add action attribute here -->
+        <form id="rule-form" method="POST">
             <div id="rules-container">
                 <div class="rule-section">
                     <div class="rule-header">Rule 1</div>
@@ -46,76 +50,77 @@
                     <div class="form-row">
                         <div class="form-group col-md-3">
                             <label for="parameter">Parameter *</label>
-                            <input type="text" class="form-control parameter" name="parameter" placeholder="Add the Parameter">
+                            <input type="text" class="form-control parameter" name="parameter" placeholder="Add the Parameter" required>
                         </div>
                         <div class="form-group col-md-3">
                             <label for="operator">Operator *</label>
-                            <select class="form-control operator" name="operator">
-                                <option>Choose...</option>
-                                <option><</option>
-                                <option>></option>
-                                <option>>=</option>
-                                <option><=</option>
-                                <option>=</option>
+                            <select class="form-control operator" name="operator" required>
+                                <option value="">Choose...</option>
+                                <option value="<"><</option>
+                                <option value=">">></option>
+                                <option value=">=">>=</option>
+                                <option value="<="><=</option>
+                                <option value="=">=</option>
                             </select>
                         </div>
                         <div class="form-group col-md-3">
                             <label for="value">Value</label>
-                            <input type="text" class="form-control value" name="value" placeholder="Value">
+                            <input type="text" class="form-control value" name="value" placeholder="Value" required>
                         </div>
                         <div class="form-group col-md-3">
                             <label for="unit">Unit *</label>
-                            <select class="form-control unit" name="unit">
-                                <option>Choose...</option>
-                                <option>mg/dL</option>
-                                <option>mmol/L</option>
-                                <option>g/L</option>
+                            <select class="form-control unit" name="unit" required>
+                                <option value="">Choose...</option>
+                                <option value="mg/dL">mg/dL</option>
+                                <option value="mmol/L">mmol/L</option>
+                                <option value="g/L">g/L</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-4">
                             <label for="ageRange">Applicable Age Range</label>
-                            <input type="text" class="form-control age-range" name="age_range" placeholder="e.g., 0-100" value="ALL">
+                            <input type="text" class="form-control age-range" name="age_range" placeholder="e.g., 0-100" value="ALL" required>
                         </div>
                         <div class="form-group col-md-4">
                             <label for="gender">Gender</label>
-                            <select class="form-control gender" name="gender">
-                                <option>ALL</option>
-                                <option>Male</option>
-                                <option>Female</option>
-                                <option>Other</option>
+                            <select class="form-control gender" name="gender" required>
+                                <option value="ALL">ALL</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
                         <div class="form-group col-md-4">
                             <label for="validUntil">Parameter Valid Until</label>
                             <div class="form-row">
                                 <div class="col-md-6">
-                                    <input type="number" class="form-control valid-until-number" name="valid_until_number" placeholder="Number">
+                                    <input type="number" class="form-control valid-until-number" name="valid_until_number" placeholder="Number" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <select class="form-control valid-until-unit" name="valid_until_unit">
-                                        <option>Days</option>
-                                        <option>Months</option>
-                                        <option>Years</option>
+                                    <select class="form-control valid-until-unit" name="valid_until_unit" required>
+                                        <option value="Days">Days</option>
+                                        <option value="Months">Months</option>
+                                        <option value="Years">Years</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <button type="button" class="btn btn-danger btn-remove">Remove This Condition</button>
                 </div>
             </div>
-            <button class="btn btn-primary btn-add">+ Add Another Condition</button>
+            <button type="button" class="btn btn-primary btn-add">+ Add Another Condition</button>
             <div class="form-group">
                 <br>
                 <label for="diseaseCode">* DISEASE CODE:</label>
-                <input type="text" class="form-control" name="disease_code" placeholder="Add Code">
+                <input type="text" class="form-control" name="disease_code" placeholder="Add Code" required>
             </div>
             <div class="form-group">
                 <label for="diseaseName">* DISEASE NAME:</label>
-                <input type="text" class="form-control" name="disease_name" placeholder="Add Disease Name">
+                <input type="text" class="form-control" name="disease_name" placeholder="Add Disease Name" required>
             </div>
-            <button type="submit" class="btn btn-success btn-submit">Submit</button> <!-- Submit button -->
+            <button type="button" class="btn btn-success btn-submit">Submit</button>
             <div class="error-message error"></div>
         </form>
     </div>
@@ -146,10 +151,14 @@
                 ruleCount++;
                 let newRuleSection = $('.rule-section').first().clone();
                 newRuleSection.find('input').val('');
-                newRuleSection.find('select').val('Choose...');
+                newRuleSection.find('select').val('');
                 newRuleSection.find('.rule-header').text('Rule ' + ruleCount);
                 newRuleSection.find('.condition-summary').attr('id', 'condition-summary-' + ruleCount).text('Condition ' + ruleCount + ':');
                 $('#rules-container').append(newRuleSection);
+            });
+
+            $(document).on('click', '.btn-remove', function() {
+                $(this).closest('.rule-section').remove();
             });
 
             $(document).on('change', 'input, select', function() {
@@ -173,10 +182,34 @@
                 if (!isValid) {
                     $('.error-message').text('All required fields must be filled out.');
                 } else {
-                    $('.error-message').text('Rule submitted successfully.');
+                    $.ajax({
+                        type: 'POST',
+                        url: '/submit',
+                        data: $('#rule-form').serialize(),
+                        success: function(response) {
+                            if (response.startsWith('Error:')) {
+                                $('.error-message').text(response);
+                            } else {
+                                $('.error-message').text('Rule submitted successfully.');
+                            }
+                        }
+                    });
                 }
             });
         });
+
+        function addCondition() {
+            const ruleDiv = document.querySelector('.rule-section').cloneNode(true);
+            const inputs = ruleDiv.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (input.tagName === 'INPUT') {
+                    input.value = '';
+                } else if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                }
+            });
+            document.getElementById('rules-container').appendChild(ruleDiv);
+        }
     </script>
 </body>
 </html>
