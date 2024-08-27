@@ -77,7 +77,7 @@ class Database:
 app = Flask(__name__)
 
 # MongoDB connection
-db = Database('mongodb://localhost:27017/', 'rulebase', 'RuleBase', 'User_Input_Lab_Values')
+db = Database('mongodb://172.16.105.132:27017/', 'rulebase', 'RuleBase', 'User_Input_Lab_Values')
 
 @app.route('/')
 def index():
