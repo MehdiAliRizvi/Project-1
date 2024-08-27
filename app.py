@@ -64,17 +64,6 @@ class Database:
         except Exception as e:
             return f'Error inserting lab values: {e}'
 
-    def find_disease_by_lab_values(self, lab_values):
-        matching_diseases = []
-        for disease in self.rulebase_collection.find():
-            for rule in disease['rules']:
-                for lab_value in lab_values:
-                    if (rule['parameter'] == lab_value['parameter'] and
-                        rule['unit'] == lab_value['unit'] and
-                        rule['range_start'] <= lab_value['value'] <= rule['range_end']):  # Range check
-                        matching_diseases.append(disease['disease_code'])
-                        break
-        return matching_diseases
 
 app = Flask(__name__)
 
@@ -144,14 +133,7 @@ def submit_lab_values():
 
     # Store lab values in the User_Input_Lab_Values collection
     result = db.insert_lab_values({'lab_values': lab_values})
-    if result.startswith('Error:'):
-        return result
-
-    matching_diseases = db.find_disease_by_lab_values(lab_values)
-    if matching_diseases:
-        return jsonify({'matching_diseases': matching_diseases})
-    else:
-        return 'No matching diseases found.'
+    return result
 
 if __name__ == '__main__':
     app.run(debug=True)
