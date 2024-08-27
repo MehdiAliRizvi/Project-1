@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule-Base</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .rule-section {
+            margin-bottom: 20px;
+        }
+        .rule-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .condition-summary {
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .btn-add {
+            margin-top: 10px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">RULE-BASE</h1>
+        <form action="/submit" method="POST"> <!-- Add action attribute here -->
+            <div id="rules-container">
+                <div class="rule-section">
+                    <div class="rule-header">Rule 1</div>
+                    <div class="condition-summary" id="condition-summary-1">First condition:</div>
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <label for="parameter">Parameter *</label>
+                            <input type="text" class="form-control parameter" name="parameter" placeholder="Add the Parameter">
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="operator">Operator *</label>
+                            <select class="form-control operator" name="operator">
+                                <option>Choose...</option>
+                                <option><</option>
+                                <option>></option>
+                                <option>>=</option>
+                                <option><=</option>
+                                <option>=</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="value">Value</label>
+                            <input type="text" class="form-control value" name="value" placeholder="Value">
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="unit">Unit *</label>
+                            <select class="form-control unit" name="unit">
+                                <option>Choose...</option>
+                                <option>mg/dL</option>
+                                <option>mmol/L</option>
+                                <option>g/L</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="ageRange">Applicable Age Range</label>
+                            <input type="text" class="form-control age-range" name="age_range" placeholder="e.g., 0-100" value="ALL">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="gender">Gender</label>
+                            <select class="form-control gender" name="gender">
+                                <option>ALL</option>
+                                <option>Male</option>
+                                <option>Female</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="validUntil">Parameter Valid Until</label>
+                            <div class="form-row">
+                                <div class="col-md-6">
+                                    <input type="number" class="form-control valid-until-number" name="valid_until_number" placeholder="Number">
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control valid-until-unit" name="valid_until_unit">
+                                        <option>Days</option>
+                                        <option>Months</option>
+                                        <option>Years</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-add">+ Add Another Condition</button>
+            <div class="form-group">
+                <br>
+                <label for="diseaseCode">* DISEASE CODE:</label>
+                <input type="text" class="form-control" name="disease_code" placeholder="Add Code">
+            </div>
+            <div class="form-group">
+                <label for="diseaseName">* DISEASE NAME:</label>
+                <input type="text" class="form-control" name="disease_name" placeholder="Add Disease Name">
+            </div>
+            <button type="submit" class="btn btn-success btn-submit">Submit</button> <!-- Submit button -->
+            <div class="error-message error"></div>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let ruleCount = 1;
+
+            function updateConditionSummary(ruleSection, ruleNumber) {
+                const parameter = ruleSection.find('.parameter').val();
+                const operator = ruleSection.find('.operator').val();
+                const value = ruleSection.find('.value').val();
+                const unit = ruleSection.find('.unit').val();
+                const ageRange = ruleSection.find('.age-range').val();
+                const gender = ruleSection.find('.gender').val();
+                const validUntilNumber = ruleSection.find('.valid-until-number').val();
+                const validUntilUnit = ruleSection.find('.valid-until-unit').val();
+
+                let conditionText = `Condition ${ruleNumber}: ${parameter} ${operator} ${value} ${unit}, applicable for ${ageRange} age range, ${gender} gender, valid until ${validUntilNumber} ${validUntilUnit}.`;
+
+                ruleSection.find(`#condition-summary-${ruleNumber}`).text(conditionText);
+            }
+
+            $('.btn-add').click(function() {
+                ruleCount++;
+                let newRuleSection = $('.rule-section').first().clone();
+                newRuleSection.find('input').val('');
+                newRuleSection.find('select').val('Choose...');
+                newRuleSection.find('.rule-header').text('Rule ' + ruleCount);
+                newRuleSection.find('.condition-summary').attr('id', 'condition-summary-' + ruleCount).text('Condition ' + ruleCount + ':');
+                $('#rules-container').append(newRuleSection);
+            });
+
+            $(document).on('change', 'input, select', function() {
+                const ruleSection = $(this).closest('.rule-section');
+                const ruleNumber = ruleSection.find('.rule-header').text().split(' ')[1];
+                updateConditionSummary(ruleSection, ruleNumber);
+            });
+
+            $('.btn-submit').click(function() {
+                let isValid = true;
+                $('.error-message').text('');
+                $('input[required], select[required]').each(function() {
+                    if ($(this).val() === '' || $(this).val() === 'Choose...') {
+                        isValid = false;
+                        $(this).addClass('is-invalid');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    $('.error-message').text('All required fields must be filled out.');
+                } else {
+                    $('.error-message').text('Rule submitted successfully.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
